@@ -594,7 +594,7 @@ func (x *MsgErrorResponse) AppendBinary(b []byte) ([]byte, error) {
 		buf.AppendString(x.Values[i])
 	}
 	buf.AppendByte(0)
-	return b, nil
+	return buf.Bytes(), nil
 }
 
 func (x *MsgErrorResponse) UnmarshalBinary(b []byte) error {

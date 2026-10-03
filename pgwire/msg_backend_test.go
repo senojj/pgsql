@@ -170,3 +170,27 @@ func TestMsgEmptyQueryResponse(t *testing.T) {
 
 	testMessage(t, buf.Bytes(), &m, nil)
 }
+
+func TestMsgErrorResponse(t *testing.T) {
+	t.Parallel()
+
+	buf := pgio.NewBuffer(nil)
+	buf.AppendByte(byte(pgwire.MessageKindErrorResponse))
+	buf.AppendInt32(19)
+	buf.AppendByte('S')
+	buf.AppendString("ERROR")
+	buf.AppendByte('C')
+	buf.AppendString("00000")
+	buf.AppendByte(0)
+
+	var m pgwire.MsgErrorResponse
+
+	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
+		require.Len(t, m.Fields, 2)
+		require.Len(t, m.Values, 2)
+		require.Equal(t, byte('S'), m.Fields[0])
+		require.Equal(t, "ERROR", m.Values[0])
+		require.Equal(t, byte('C'), m.Fields[1])
+		require.Equal(t, "00000", m.Values[1])
+	})
+}
