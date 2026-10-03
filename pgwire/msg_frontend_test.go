@@ -191,3 +191,55 @@ func TestMsgFunctionCall(t *testing.T) {
 		require.Equal(t, pgwire.FormatKindBinary, m.ResultFormat)
 	})
 }
+
+func TestMsgGSSENCRequest(t *testing.T) {
+	t.Parallel()
+
+	buf := pgio.NewBuffer(nil)
+	buf.AppendInt32(8)
+	buf.AppendInt32(pgwire.CodeEncryptionRequest)
+
+	var m pgwire.MsgGSSENCRequest
+
+	testMessage(t, buf.Bytes(), &m, nil)
+}
+
+func TestMsgGSSResponse(t *testing.T) {
+	t.Parallel()
+
+	buf := pgio.NewBuffer(nil)
+	buf.AppendByte(byte(pgwire.MessageKindGSSResponse))
+	buf.AppendInt32(15)
+	buf.AppendByte([]byte("hello world")...)
+
+	var m pgwire.MsgGSSResponse
+
+	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
+		require.Equal(t, []byte("hello world"), m.Data)
+	})
+}
+
+func TestMsgParse(t *testing.T) {
+	t.Parallel()
+
+	buf := pgio.NewBuffer(nil)
+	buf.AppendByte(byte(pgwire.MessageKindParse))
+	buf.AppendInt32(36)
+	buf.AppendString("destination")
+	buf.AppendString("query")
+	buf.AppendInt16(3)
+	buf.AppendInt32(3)
+	buf.AppendInt32(2)
+	buf.AppendInt32(1)
+		
+	var m pgwire.MsgParse	
+
+	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
+		require.Equal(t, "destination", m.DestinationStatementName)
+		require.Equal(t, "query", m.Query)
+		require.Len(t, m.ParameterDataTypes, 3)
+		require.Equal(t, int32(3), m.ParameterDataTypes[0])
+		require.Equal(t, int32(2), m.ParameterDataTypes[1])
+		require.Equal(t, int32(1), m.ParameterDataTypes[2])
+	})
+}
