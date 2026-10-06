@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"slices"
 	"unsafe"
 )
 
@@ -63,7 +62,6 @@ func AppendByte(b []byte, i ...byte) []byte {
 }
 
 func AppendInt8(b []byte, i ...int8) []byte {
-	b = slices.Grow(b, len(i))
 	for _, v := range i {
 		b = append(b, byte(v))
 	}
@@ -71,7 +69,6 @@ func AppendInt8(b []byte, i ...int8) []byte {
 }
 
 func AppendInt16(b []byte, i ...int16) []byte {
-	b = slices.Grow(b, len(i))
 	for _, v := range i {
 		b = binary.BigEndian.AppendUint16(b, uint16(v))
 	}
@@ -79,7 +76,6 @@ func AppendInt16(b []byte, i ...int16) []byte {
 }
 
 func AppendInt32(b []byte, i ...int32) []byte {
-	b = slices.Grow(b, len(i))
 	for _, v := range i {
 		b = binary.BigEndian.AppendUint32(b, uint32(v))
 	}
@@ -87,7 +83,6 @@ func AppendInt32(b []byte, i ...int32) []byte {
 }
 
 func AppendInt64(b []byte, i ...int64) []byte {
-	b = slices.Grow(b, len(i))
 	for _, v := range i {
 		b = binary.BigEndian.AppendUint64(b, uint64(v))
 	}
@@ -96,8 +91,7 @@ func AppendInt64(b []byte, i ...int64) []byte {
 
 func AppendString(b []byte, s ...string) []byte {
 	for _, v := range s {
-		b = slices.Grow(b, len(v)+1)
-		b = append(b, []byte(v)...)
+		b = append(b, v...)
 		b = append(b, 0)
 	}
 	return b
