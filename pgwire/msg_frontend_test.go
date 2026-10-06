@@ -231,8 +231,8 @@ func TestMsgParse(t *testing.T) {
 	buf.AppendInt32(3)
 	buf.AppendInt32(2)
 	buf.AppendInt32(1)
-		
-	var m pgwire.MsgParse	
+
+	var m pgwire.MsgParse
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
 		require.Equal(t, "destination", m.DestinationStatementName)

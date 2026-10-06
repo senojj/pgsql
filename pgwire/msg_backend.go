@@ -719,7 +719,7 @@ func (x *MsgNegotiateProtocolVersion) AppendBinary(b []byte) ([]byte, error) {
 	}
 
 	for _, option := range x.UnrecognizedOptions {
-		length += len(option)
+		length += len(option) + 1 // +1 null byte for string termination
 	}
 
 	if length > math.MaxInt32 {

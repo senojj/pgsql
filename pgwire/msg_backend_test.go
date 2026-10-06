@@ -194,3 +194,40 @@ func TestMsgErrorResponse(t *testing.T) {
 		require.Equal(t, "00000", m.Values[1])
 	})
 }
+
+func TestMsgFunctionCallResponse(t *testing.T) {
+	t.Parallel()
+
+	buf := pgio.NewBuffer(nil)
+	buf.AppendByte(byte(pgwire.MessageKindFunctionCallResponse))
+	buf.AppendInt32(8)
+	buf.AppendInt32(-1)
+
+	var m pgwire.MsgFunctionCallResponse
+
+	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
+		require.Len(t, m.Result, 0)
+		require.Equal(t, []byte(nil), m.Result)
+	})
+}
+
+func TestMsgNegotiateProtocolVersion(t *testing.T) {
+	t.Parallel()
+
+	buf := pgio.NewBuffer(nil)
+	buf.AppendByte(byte(pgwire.MessageKindNegotiateProtocolVersion))
+	buf.AppendInt32(24)
+	buf.AppendInt32(1)
+	buf.AppendInt32(2)
+	buf.AppendString("hello")
+	buf.AppendString("world")
+
+	var m pgwire.MsgNegotiateProtocolVersion
+
+	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
+		require.Equal(t, int32(1), m.MinorVersionSupported)
+		require.Len(t, m.UnrecognizedOptions, 2)
+		require.Equal(t, "hello", m.UnrecognizedOptions[0])
+		require.Equal(t, "world", m.UnrecognizedOptions[1])
+	})
+}
