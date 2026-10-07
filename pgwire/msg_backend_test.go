@@ -249,5 +249,25 @@ func TestMsgNoticeResponse(t *testing.T) {
 
 	buf := pgio.NewBuffer(nil)
 	buf.AppendByte(pgwire.TypeNoticeResponse)
-	
+	buf.AppendInt32(32)
+	buf.AppendByte(pgwire.FieldSeverity)
+	buf.AppendString("ERROR")
+	buf.AppendByte(pgwire.FieldCode)
+	buf.AppendString("00000")
+	buf.AppendByte(pgwire.FieldMessage)
+	buf.AppendString("hello world")	
+	buf.AppendByte(0)
+
+	var m pgwire.MsgNoticeResponse
+
+	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
+		require.Len(t, m.Fields, 3) 
+		require.Len(t, m.Values, 3)
+		require.Equal(t, pgwire.FieldSeverity, m.Fields[0])
+		require.Equal(t, "ERROR", m.Values[0])
+		require.Equal(t, pgwire.FieldCode, m.Fields[1])
+		require.Equal(t, "00000", m.Values[1])
+		require.Equal(t, pgwire.FieldMessage, m.Fields[2])
+		require.Equal(t, "hello world", m.Values[2])
+	})
 }

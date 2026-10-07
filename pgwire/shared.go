@@ -27,6 +27,10 @@ func shiftLength(in []byte) ([]byte, error) {
 		return in, err
 	}
 
+	if length < 4 {
+		return in, pgio.ErrValueUnderflow
+	}
+
 	size := int(length) - 4
 
 	if size > len(b) {
