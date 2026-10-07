@@ -916,6 +916,7 @@ func (x *MsgNotificationResponse) AppendBinary(b []byte) ([]byte, error) {
 	buf.Grow(size)
 	buf.AppendByte(TypeNotificationResponse)
 	buf.AppendInt32(int32(length))
+	buf.AppendInt32(x.ProcessID)
 	buf.AppendString(x.Channel)
 	buf.AppendString(x.Payload)
 	return buf.Bytes(), nil

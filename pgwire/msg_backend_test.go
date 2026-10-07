@@ -271,3 +271,43 @@ func TestMsgNoticeResponse(t *testing.T) {
 		require.Equal(t, "hello world", m.Values[2])
 	})
 }
+
+func TestMsgNotificationResponse(t *testing.T) {
+	t.Parallel()
+
+	buf := pgio.NewBuffer(nil)
+	buf.AppendByte(pgwire.TypeNotificationResponse)
+	buf.AppendInt32(26)
+	buf.AppendInt32(123)
+	buf.AppendString("channel_a")
+	buf.AppendString("payload")
+
+	var m pgwire.MsgNotificationResponse
+
+	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
+		require.Equal(t, int32(123), m.ProcessID)
+		require.Equal(t, "channel_a", m.Channel)
+		require.Equal(t, "payload", m.Payload)
+	})
+}
+
+func TestMsgParameterDescription(t *testing.T) {
+	t.Parallel()
+
+	buf := pgio.NewBuffer(nil)
+	buf.AppendByte(pgwire.TypeParameterDescription)
+	buf.AppendInt32(18)
+	buf.AppendInt16(3)
+	buf.AppendInt32(3)
+	buf.AppendInt32(2)
+	buf.AppendInt32(1)
+
+	var m pgwire.MsgParameterDescription
+
+	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
+		require.Len(t, m.Parameters, 3)
+		require.Equal(t, int32(3), m.Parameters[0])
+		require.Equal(t, int32(2), m.Parameters[1])
+		require.Equal(t, int32(1), m.Parameters[2])
+	})
+}
