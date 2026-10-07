@@ -27,18 +27,18 @@ func (x *MsgCopyData) AppendBinary(b []byte) ([]byte, error) {
 		return b, invalidFormat(pgio.ErrValueOverflow)
 	}
 
-	size := sizeMessageKind + length
+	size := sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindCopyData))
+	buf.AppendByte(TypeCopyData)
 	buf.AppendInt32(int32(length))
 	buf.AppendByte(x.Data...)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgCopyData) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindCopyData, b)
+	b, err := shiftHeader(TypeCopyData, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -62,17 +62,17 @@ func (x *MsgCopyDone) backend() {}
 
 func (x *MsgCopyDone) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength
-	const size = sizeMessageKind + length
+	const size = sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindCopyDone))
+	buf.AppendByte(TypeCopyDone)
 	buf.AppendInt32(int32(length))
 	return buf.Bytes(), nil
 }
 
 func (x *MsgCopyDone) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindCopyDone, b)
+	b, err := shiftHeader(TypeCopyDone, b)
 	if err != nil {
 		return invalidFormat(err)
 	}

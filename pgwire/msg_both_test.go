@@ -12,7 +12,7 @@ func TestMsgCopyData(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindCopyData))
+	buf.AppendByte(pgwire.TypeCopyData)
 	buf.AppendInt32(15)
 	buf.AppendByte([]byte("hello world")...)
 
@@ -27,7 +27,7 @@ func TestMsgCopyDone(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindCopyDone))
+	buf.AppendByte(pgwire.TypeCopyDone)
 	buf.AppendInt32(4)
 
 	var m pgwire.MsgCopyDone

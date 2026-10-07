@@ -12,15 +12,15 @@ func TestMsgBind(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindBind))
+	buf.AppendByte(pgwire.TypeBind)
 	buf.AppendInt32(73)
 	buf.AppendString("hello world")
 	buf.AppendString("lorem ipsum")
 	buf.AppendInt16(3)
 	buf.AppendInt16(
-		int16(pgwire.FormatKindBinary),
-		int16(pgwire.FormatKindBinary),
-		int16(pgwire.FormatKindBinary),
+		int16(pgwire.FormatBinary),
+		int16(pgwire.FormatBinary),
+		int16(pgwire.FormatBinary),
 	)
 	buf.AppendInt16(3)
 	buf.AppendInt32(5)
@@ -31,9 +31,9 @@ func TestMsgBind(t *testing.T) {
 	buf.AppendByte([]byte("dolor")...)
 	buf.AppendInt16(3)
 	buf.AppendInt16(
-		int16(pgwire.FormatKindBinary),
-		int16(pgwire.FormatKindBinary),
-		int16(pgwire.FormatKindBinary),
+		int16(pgwire.FormatBinary),
+		int16(pgwire.FormatBinary),
+		int16(pgwire.FormatBinary),
 	)
 
 	var m pgwire.MsgBind
@@ -43,10 +43,10 @@ func TestMsgBind(t *testing.T) {
 
 		require.Equal(t, "lorem ipsum", m.SourceName)
 
-		require.Equal(t, []pgwire.FormatKind{
-			pgwire.FormatKindBinary,
-			pgwire.FormatKindBinary,
-			pgwire.FormatKindBinary,
+		require.Equal(t, []byte{
+			pgwire.FormatBinary,
+			pgwire.FormatBinary,
+			pgwire.FormatBinary,
 		}, m.ParameterFormatCodes)
 
 		require.Equal(t, [][]byte{
@@ -55,10 +55,10 @@ func TestMsgBind(t *testing.T) {
 			[]byte("dolor"),
 		}, m.ParameterData)
 
-		require.Equal(t, []pgwire.FormatKind{
-			pgwire.FormatKindBinary,
-			pgwire.FormatKindBinary,
-			pgwire.FormatKindBinary,
+		require.Equal(t, []byte{
+			pgwire.FormatBinary,
+			pgwire.FormatBinary,
+			pgwire.FormatBinary,
 		}, m.ColumnFormatCodes)
 	})
 }
@@ -84,15 +84,15 @@ func TestMsgClose(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindClose))
+	buf.AppendByte(pgwire.TypeClose)
 	buf.AppendInt32(17)
-	buf.AppendInt8(int8(pgwire.ObjectKindPortal))
+	buf.AppendInt8(int8(pgwire.ObjectPortal))
 	buf.AppendString("hello world")
 
 	var m pgwire.MsgClose
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
-		require.Equal(t, pgwire.ObjectKindPortal, m.ObjectKind)
+		require.Equal(t, pgwire.ObjectPortal, m.ObjectKind)
 		require.Equal(t, "hello world", m.ObjectName)
 	})
 }
@@ -101,7 +101,7 @@ func TestMsgCopyFail(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindCopyFail))
+	buf.AppendByte(pgwire.TypeCopyFail)
 	buf.AppendInt32(16)
 	buf.AppendString("hello world")
 
@@ -116,15 +116,15 @@ func TestMsgDescribe(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindDescribe))
+	buf.AppendByte(pgwire.TypeDescribe)
 	buf.AppendInt32(17)
-	buf.AppendByte(byte(pgwire.ObjectKindPortal))
+	buf.AppendByte(pgwire.ObjectPortal)
 	buf.AppendString("hello world")
 
 	var m pgwire.MsgDescribe
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
-		require.Equal(t, pgwire.ObjectKindPortal, m.ObjectKind)
+		require.Equal(t, pgwire.ObjectPortal, m.ObjectKind)
 		require.Equal(t, "hello world", m.ObjectName)
 	})
 }
@@ -133,7 +133,7 @@ func TestMsgExecute(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindExecute))
+	buf.AppendByte(pgwire.TypeExecute)
 	buf.AppendInt32(20)
 	buf.AppendString("hello world")
 	buf.AppendInt32(5)
@@ -150,7 +150,7 @@ func TestMsgFlush(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindFlush))
+	buf.AppendByte(pgwire.TypeFlush)
 	buf.AppendInt32(4)
 
 	var m pgwire.MsgFlush
@@ -162,11 +162,11 @@ func TestMsgFunctionCall(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindFunctionCall))
+	buf.AppendByte(pgwire.TypeFunctionCall)
 	buf.AppendInt32(39)
 	buf.AppendInt32(4321)
 	buf.AppendInt16(1)
-	buf.AppendInt16(int16(pgwire.FormatKindBinary))
+	buf.AppendInt16(int16(pgwire.FormatBinary))
 	buf.AppendInt16(3)
 	buf.AppendInt32(5)
 	buf.AppendByte([]byte("hello")...)
@@ -174,21 +174,21 @@ func TestMsgFunctionCall(t *testing.T) {
 	buf.AppendByte([]byte(" ")...)
 	buf.AppendInt32(5)
 	buf.AppendByte([]byte("world")...)
-	buf.AppendInt16(int16(pgwire.FormatKindBinary))
+	buf.AppendInt16(int16(pgwire.FormatBinary))
 
 	var m pgwire.MsgFunctionCall
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
 		require.Equal(t, int32(4321), m.ObjectID)
 		require.Len(t, m.ArgumentFormats, 1)
-		require.Equal(t, []pgwire.FormatKind{pgwire.FormatKindBinary}, m.ArgumentFormats)
+		require.Equal(t, []byte{pgwire.FormatBinary}, m.ArgumentFormats)
 		require.Len(t, m.ArgumentValues, 3)
 		require.Equal(t, [][]byte{
 			[]byte("hello"),
 			[]byte(" "),
 			[]byte("world"),
 		}, m.ArgumentValues)
-		require.Equal(t, pgwire.FormatKindBinary, m.ResultFormat)
+		require.Equal(t, pgwire.FormatBinary, m.ResultFormat)
 	})
 }
 
@@ -208,7 +208,7 @@ func TestMsgGSSResponse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindGSSResponse))
+	buf.AppendByte(pgwire.TypeGSSResponse)
 	buf.AppendInt32(15)
 	buf.AppendByte([]byte("hello world")...)
 
@@ -223,7 +223,7 @@ func TestMsgParse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindParse))
+	buf.AppendByte(pgwire.TypeParse)
 	buf.AppendInt32(36)
 	buf.AppendString("destination")
 	buf.AppendString("query")

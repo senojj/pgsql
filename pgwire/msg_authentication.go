@@ -15,30 +15,30 @@ func (x *MsgAuthenticationOk) message() {}
 func (x *MsgAuthenticationOk) backend() {}
 
 func (x *MsgAuthenticationOk) AppendBinary(b []byte) ([]byte, error) {
-	const length = sizeMessageLength + sizeAuthKind
-	const size = sizeMessageKind + length
+	const length = sizeMessageLength + sizeAuth
+	const size = sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindOk))
+	buf.AppendInt32(AuthOk)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationOk) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	authKind, b, err := pgio.ShiftInt32(b)
+	auth, b, err := pgio.ShiftInt32(b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindOk.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindOk)
+	if AuthOk != auth {
+		return unexpectedAuth(auth, AuthOk)
 	}
 
 	if len(b) > 0 {
@@ -57,30 +57,30 @@ func (x *MsgAuthenticationKerberosV5) message() {}
 func (x *MsgAuthenticationKerberosV5) backend() {}
 
 func (x *MsgAuthenticationKerberosV5) AppendBinary(b []byte) ([]byte, error) {
-	const length = sizeMessageLength + sizeAuthKind
-	const size = sizeMessageKind + length
+	const length = sizeMessageLength + sizeAuth
+	const size = sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindKerberosV5))
+	buf.AppendInt32(AuthKerberosV5)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationKerberosV5) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	authKind, b, err := pgio.ShiftInt32(b)
+	auth, b, err := pgio.ShiftInt32(b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindKerberosV5.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindKerberosV5)
+	if AuthKerberosV5 != auth {
+		return unexpectedAuth(auth, AuthKerberosV5)
 	}
 
 	if len(b) > 0 {
@@ -99,30 +99,30 @@ func (x *MsgAuthenticationCleartextPassword) message() {}
 func (x *MsgAuthenticationCleartextPassword) backend() {}
 
 func (x *MsgAuthenticationCleartextPassword) AppendBinary(b []byte) ([]byte, error) {
-	const length = sizeMessageLength + sizeAuthKind
-	const size = sizeMessageKind + length
+	const length = sizeMessageLength + sizeAuth
+	const size = sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindClearTextPassword))
+	buf.AppendInt32(AuthClearTextPassword)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationCleartextPassword) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	authKind, b, err := pgio.ShiftInt32(b)
+	auth, b, err := pgio.ShiftInt32(b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindClearTextPassword.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindClearTextPassword)
+	if AuthClearTextPassword != auth {
+		return unexpectedAuth(auth, AuthClearTextPassword)
 	}
 
 	if len(b) > 0 {
@@ -144,31 +144,31 @@ func (x *MsgAuthenticationMD5Password) backend() {}
 
 func (x *MsgAuthenticationMD5Password) AppendBinary(b []byte) ([]byte, error) {
 	const sizeSalt = 4
-	const length = sizeMessageLength + sizeAuthKind + sizeSalt
-	const size = sizeMessageKind + length
+	const length = sizeMessageLength + sizeAuth + sizeSalt
+	const size = sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindMD5Password))
+	buf.AppendInt32(AuthMD5Password)
 	buf.AppendByte(x.Salt[:]...)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationMD5Password) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	authKind, b, err := pgio.ShiftInt32(b)
+	auth, b, err := pgio.ShiftInt32(b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindMD5Password.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindMD5Password)
+	if AuthMD5Password != auth {
+		return unexpectedAuth(auth, AuthMD5Password)
 	}
 	copy(x.Salt[:], b)
 	return nil
@@ -184,30 +184,30 @@ func (x *MsgAuthenticationGSS) message() {}
 func (x *MsgAuthenticationGSS) backend() {}
 
 func (x *MsgAuthenticationGSS) AppendBinary(b []byte) ([]byte, error) {
-	const length = sizeMessageLength + sizeAuthKind
-	const size = sizeMessageKind + length
+	const length = sizeMessageLength + sizeAuth
+	const size = sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindGSS))
+	buf.AppendInt32(AuthGSS)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationGSS) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	authKind, b, err := pgio.ShiftInt32(b)
+	auth, b, err := pgio.ShiftInt32(b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindGSS.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindGSS)
+	if AuthGSS != auth {
+		return unexpectedAuth(auth, AuthGSS)
 	}
 	if len(b) > 0 {
 		return invalidFormat(pgio.ErrValueOverflow)
@@ -228,36 +228,36 @@ func (x *MsgAuthenticationGSSContinue) backend() {}
 
 func (x *MsgAuthenticationGSSContinue) AppendBinary(b []byte) ([]byte, error) {
 	sizeData := len(x.Data)
-	length := sizeMessageLength + sizeAuthKind + sizeData
+	length := sizeMessageLength + sizeAuth + sizeData
 
 	if length > math.MaxInt32 {
 		return b, invalidFormat(pgio.ErrValueOverflow)
 	}
 
-	size := sizeMessageKind + length
+	size := sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindGSSContinue))
+	buf.AppendInt32(AuthGSSContinue)
 	buf.AppendByte(x.Data...)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationGSSContinue) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	authKind, b, err := pgio.ShiftInt32(b)
+	auth, b, err := pgio.ShiftInt32(b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindGSSContinue.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindGSSContinue)
+	if AuthGSSContinue != auth {
+		return unexpectedAuth(auth, AuthGSSContinue)
 	}
 	x.Data = make([]byte, len(b))
 	copy(x.Data, b)
@@ -274,30 +274,30 @@ func (x *MsgAuthenticationSSPI) message() {}
 func (x *MsgAuthenticationSSPI) backend() {}
 
 func (x *MsgAuthenticationSSPI) AppendBinary(b []byte) ([]byte, error) {
-	const length = sizeMessageLength + sizeAuthKind
-	const size = sizeMessageKind + length
+	const length = sizeMessageLength + sizeAuth
+	const size = sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindSSPI))
+	buf.AppendInt32(AuthSSPI)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationSSPI) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	authKind, b, err := pgio.ShiftInt32(b)
+	auth, b, err := pgio.ShiftInt32(b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindSSPI.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindSSPI)
+	if AuthSSPI != auth {
+		return unexpectedAuth(auth, AuthSSPI)
 	}
 
 	if len(b) > 0 {
@@ -326,39 +326,39 @@ func (x *MsgAuthenticationSASL) AppendBinary(b []byte) ([]byte, error) {
 	}
 	sizeMechanisms += 1 // null terminated list
 
-	length := sizeMessageLength + sizeAuthKind + sizeMechanisms
+	length := sizeMessageLength + sizeAuth + sizeMechanisms
 
 	if length > math.MaxInt32 {
 		return b, invalidFormat(pgio.ErrValueOverflow)
 	}
 
-	size := sizeMessageKind + length
+	size := sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindSASL))
+	buf.AppendInt32(AuthSASL)
 	buf.AppendString(x.Mechanisms...)
 	buf.AppendByte(0x0)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationSASL) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
 	buf := pgio.NewBuffer(b)
 
-	authKind, err := buf.ShiftInt32()
+	auth, err := buf.ShiftInt32()
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindSASL.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindSASL)
+	if AuthSASL != auth {
+		return unexpectedAuth(auth, AuthSASL)
 	}
 	x.Mechanisms = make([]string, 0, buf.Count(nullByte))
 
@@ -393,36 +393,36 @@ func (x *MsgAuthenticationSASLContinue) backend() {}
 func (x *MsgAuthenticationSASLContinue) AppendBinary(b []byte) ([]byte, error) {
 	sizeData := len(x.Data)
 
-	length := sizeMessageLength + sizeAuthKind + sizeData
+	length := sizeMessageLength + sizeAuth + sizeData
 
 	if length > math.MaxInt32 {
 		return b, invalidFormat(pgio.ErrValueOverflow)
 	}
 
-	size := sizeMessageKind + length
+	size := sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindSASLContinue))
+	buf.AppendInt32(AuthSASLContinue)
 	buf.AppendByte(x.Data...)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationSASLContinue) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	authKind, b, err := pgio.ShiftInt32(b)
+	auth, b, err := pgio.ShiftInt32(b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindSASLContinue.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindSASLContinue)
+	if AuthSASLContinue != auth {
+		return unexpectedAuth(auth, AuthSASLContinue)
 	}
 	x.Data = make([]byte, len(b))
 	copy(x.Data, b)
@@ -443,36 +443,36 @@ func (x *MsgAuthenticationSASLFinal) backend() {}
 func (x *MsgAuthenticationSASLFinal) AppendBinary(b []byte) ([]byte, error) {
 	sizeData := len(x.Data)
 
-	length := sizeMessageLength + sizeAuthKind + sizeData
+	length := sizeMessageLength + sizeAuth + sizeData
 
 	if length > math.MaxInt32 {
 		return b, invalidFormat(pgio.ErrValueOverflow)
 	}
 
-	size := sizeMessageKind + length
+	size := sizeMessageType + length
 
 	buf := pgio.NewBuffer(b)
 	buf.Grow(size)
-	buf.AppendByte(byte(MessageKindAuthentication))
+	buf.AppendByte(TypeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(int32(AuthenticationKindSASLFinal))
+	buf.AppendInt32(AuthSASLFinal)
 	buf.AppendByte(x.Data...)
 	return buf.Bytes(), nil
 }
 
 func (x *MsgAuthenticationSASLFinal) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(MessageKindAuthentication, b)
+	b, err := shiftHeader(TypeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	authKind, b, err := pgio.ShiftInt32(b)
+	auth, b, err := pgio.ShiftInt32(b)
 	if err != nil {
 		return invalidFormat(err)
 	}
 
-	if !AuthenticationKindSASLFinal.Is(authKind) {
-		return unexpectedAuthKind(authKind, AuthenticationKindSASLFinal)
+	if AuthSASLFinal != auth {
+		return unexpectedAuth(auth, AuthSASLFinal)
 	}
 	x.Data = make([]byte, len(b))
 	copy(x.Data, b)

@@ -12,9 +12,9 @@ func TestMsgAuthenticationOk(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindOk))
+	buf.AppendInt32(int32(pgwire.AuthOk))
 
 	var m pgwire.MsgAuthenticationOk
 
@@ -25,9 +25,9 @@ func TestMsgAuthenticationKerberosV5(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindKerberosV5))
+	buf.AppendInt32(int32(pgwire.AuthKerberosV5))
 
 	var m pgwire.MsgAuthenticationKerberosV5
 
@@ -38,9 +38,9 @@ func TestMsgAuthenticationClearTextPassword(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindClearTextPassword))
+	buf.AppendInt32(int32(pgwire.AuthClearTextPassword))
 
 	var m pgwire.MsgAuthenticationCleartextPassword
 
@@ -51,9 +51,9 @@ func TestMsgAuthenticationMD5Password(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(12)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindMD5Password))
+	buf.AppendInt32(int32(pgwire.AuthMD5Password))
 	buf.AppendByte([]byte("4321")...)
 
 	var m pgwire.MsgAuthenticationMD5Password
@@ -67,9 +67,9 @@ func TestMsgAuthenticationGSS(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindGSS))
+	buf.AppendInt32(int32(pgwire.AuthGSS))
 
 	var m pgwire.MsgAuthenticationGSS
 
@@ -80,9 +80,9 @@ func TestMsgAuthenticationGSSContinue(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(19)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindGSSContinue))
+	buf.AppendInt32(int32(pgwire.AuthGSSContinue))
 	buf.AppendByte([]byte("hello world")...)
 
 	var m pgwire.MsgAuthenticationGSSContinue
@@ -96,9 +96,9 @@ func TestMsgAuthenticationSSPI(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindSSPI))
+	buf.AppendInt32(int32(pgwire.AuthSSPI))
 
 	var m pgwire.MsgAuthenticationSSPI
 
@@ -109,9 +109,9 @@ func TestMsgAuthenticationSASL(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(21)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindSASL))
+	buf.AppendInt32(int32(pgwire.AuthSASL))
 	buf.AppendString("hello", "world")
 	buf.AppendByte(0)
 
@@ -126,9 +126,9 @@ func TestMsgAuthenticationSASLContinue(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(19)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindSASLContinue))
+	buf.AppendInt32(int32(pgwire.AuthSASLContinue))
 	buf.AppendByte([]byte("hello world")...)
 
 	var m pgwire.MsgAuthenticationSASLContinue
@@ -142,9 +142,9 @@ func TestMsgAuthenticationSASLFinal(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.MessageKindAuthentication))
+	buf.AppendByte(byte(pgwire.TypeAuthentication))
 	buf.AppendInt32(19)
-	buf.AppendInt32(int32(pgwire.AuthenticationKindSASLFinal))
+	buf.AppendInt32(int32(pgwire.AuthSASLFinal))
 	buf.AppendByte([]byte("hello world")...)
 
 	var m pgwire.MsgAuthenticationSASLFinal

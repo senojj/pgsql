@@ -13,12 +13,12 @@ func invalidFormat(cause error) error {
 	return fmt.Errorf("%w: %w", ErrInvalidFormat, cause)
 }
 
-func unexpectedKind(got byte, want MessageKind) error {
-	return fmt.Errorf("%w: got '%d', want '%d'", ErrUnexpectedKind, got, want)
+func unexpectedType(got, want byte) error {
+	return fmt.Errorf("%w: got '%d', want '%d'", ErrUnexpectedType, got, want)
 }
 
-func unexpectedAuthKind(got int32, want AuthenticationKind) error {
-	return fmt.Errorf("%w: got '%d', want '%d'", ErrUnexpectedKind, got, want)
+func unexpectedAuth(got, want int32) error {
+	return fmt.Errorf("%w: got '%d', want '%d'", ErrUnexpectedType, got, want)
 }
 
 func shiftLength(in []byte) ([]byte, error) {
@@ -35,14 +35,14 @@ func shiftLength(in []byte) ([]byte, error) {
 	return b[:size], nil
 }
 
-func shiftHeader(msg MessageKind, in []byte) ([]byte, error) {
+func shiftHeader(msg byte, in []byte) ([]byte, error) {
 	kind, b, err := pgio.ShiftByte(in)
 	if err != nil {
 		return in, err
 	}
 
-	if !msg.Is(kind) {
-		return in, unexpectedKind(kind, msg)
+	if msg != kind {
+		return in, unexpectedType(kind, msg)
 	}
 
 	return shiftLength(b)
