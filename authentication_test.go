@@ -1,8 +1,6 @@
-package pgwire_test
+package pgsql
 
 import (
-	"gopsql/pgio"
-	"gopsql/pgwire"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,12 +9,12 @@ import (
 func TestMsgAuthenticationOk(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthOk))
+	buf.AppendInt32(authOk)
 
-	var m pgwire.MsgAuthenticationOk
+	var m msgAuthenticationOk
 
 	testMessage(t, buf.Bytes(), &m, nil)
 }
@@ -24,12 +22,12 @@ func TestMsgAuthenticationOk(t *testing.T) {
 func TestMsgAuthenticationKerberosV5(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthKerberosV5))
+	buf.AppendInt32(authKerberosV5)
 
-	var m pgwire.MsgAuthenticationKerberosV5
+	var m msgAuthenticationKerberosV5
 
 	testMessage(t, buf.Bytes(), &m, nil)
 }
@@ -37,12 +35,12 @@ func TestMsgAuthenticationKerberosV5(t *testing.T) {
 func TestMsgAuthenticationClearTextPassword(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthClearTextPassword))
+	buf.AppendInt32(authClearTextPassword)
 
-	var m pgwire.MsgAuthenticationCleartextPassword
+	var m msgAuthenticationCleartextPassword
 
 	testMessage(t, buf.Bytes(), &m, nil)
 }
@@ -50,13 +48,13 @@ func TestMsgAuthenticationClearTextPassword(t *testing.T) {
 func TestMsgAuthenticationMD5Password(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(12)
-	buf.AppendInt32(int32(pgwire.AuthMD5Password))
+	buf.AppendInt32(authMD5Password)
 	buf.AppendByte([]byte("4321")...)
 
-	var m pgwire.MsgAuthenticationMD5Password
+	var m msgAuthenticationMD5Password
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
 		require.Equal(t, "4321", string(m.Salt[:]))
@@ -66,12 +64,12 @@ func TestMsgAuthenticationMD5Password(t *testing.T) {
 func TestMsgAuthenticationGSS(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthGSS))
+	buf.AppendInt32(authGSS)
 
-	var m pgwire.MsgAuthenticationGSS
+	var m msgAuthenticationGSS
 
 	testMessage(t, buf.Bytes(), &m, nil)
 }
@@ -79,13 +77,13 @@ func TestMsgAuthenticationGSS(t *testing.T) {
 func TestMsgAuthenticationGSSContinue(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(19)
-	buf.AppendInt32(int32(pgwire.AuthGSSContinue))
+	buf.AppendInt32(authGSSContinue)
 	buf.AppendByte([]byte("hello world")...)
 
-	var m pgwire.MsgAuthenticationGSSContinue
+	var m msgAuthenticationGSSContinue
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
 		require.Equal(t, "hello world", string(m.Data))
@@ -95,12 +93,12 @@ func TestMsgAuthenticationGSSContinue(t *testing.T) {
 func TestMsgAuthenticationSSPI(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(8)
-	buf.AppendInt32(int32(pgwire.AuthSSPI))
+	buf.AppendInt32(authSSPI)
 
-	var m pgwire.MsgAuthenticationSSPI
+	var m msgAuthenticationSSPI
 
 	testMessage(t, buf.Bytes(), &m, nil)
 }
@@ -108,14 +106,14 @@ func TestMsgAuthenticationSSPI(t *testing.T) {
 func TestMsgAuthenticationSASL(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(21)
-	buf.AppendInt32(int32(pgwire.AuthSASL))
+	buf.AppendInt32(authSASL)
 	buf.AppendString("hello", "world")
 	buf.AppendByte(0)
 
-	var m pgwire.MsgAuthenticationSASL
+	var m msgAuthenticationSASL
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
 		require.Equal(t, []string{"hello", "world"}, m.Mechanisms)
@@ -125,13 +123,13 @@ func TestMsgAuthenticationSASL(t *testing.T) {
 func TestMsgAuthenticationSASLContinue(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(19)
-	buf.AppendInt32(int32(pgwire.AuthSASLContinue))
+	buf.AppendInt32(authSASLContinue)
 	buf.AppendByte([]byte("hello world")...)
 
-	var m pgwire.MsgAuthenticationSASLContinue
+	var m msgAuthenticationSASLContinue
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
 		require.Equal(t, "hello world", string(m.Data))
@@ -141,13 +139,13 @@ func TestMsgAuthenticationSASLContinue(t *testing.T) {
 func TestMsgAuthenticationSASLFinal(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(byte(pgwire.TypeAuthentication))
+	buf := buffer{}
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(19)
-	buf.AppendInt32(int32(pgwire.AuthSASLFinal))
+	buf.AppendInt32(authSASLFinal)
 	buf.AppendByte([]byte("hello world")...)
 
-	var m pgwire.MsgAuthenticationSASLFinal
+	var m msgAuthenticationSASLFinal
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
 		require.Equal(t, "hello world", string(m.Data))
