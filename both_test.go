@@ -1,8 +1,6 @@
-package pgwire_test
+package pgsql
 
 import (
-	"gopsql/pgio"
-	"gopsql/pgwire"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,12 +9,12 @@ import (
 func TestMsgCopyData(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(pgwire.TypeCopyData)
+	buf := buffer{}
+	buf.AppendByte(typeCopyData)
 	buf.AppendInt32(15)
 	buf.AppendByte([]byte("hello world")...)
 
-	var m pgwire.MsgCopyData
+	var m msgCopyData
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
 		require.Equal(t, []byte("hello world"), m.Data)
@@ -26,11 +24,11 @@ func TestMsgCopyData(t *testing.T) {
 func TestMsgCopyDone(t *testing.T) {
 	t.Parallel()
 
-	buf := pgio.NewBuffer(nil)
-	buf.AppendByte(pgwire.TypeCopyDone)
+	buf := buffer{}
+	buf.AppendByte(typeCopyDone)
 	buf.AppendInt32(4)
 
-	var m pgwire.MsgCopyDone
+	var m msgCopyDone
 
 	testMessage(t, buf.Bytes(), &m, nil)
 }
