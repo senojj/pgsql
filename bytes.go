@@ -1,4 +1,4 @@
-package pgio
+package pgsql
 
 import (
 	"bytes"
@@ -7,14 +7,14 @@ import (
 	"unsafe"
 )
 
-func ShiftByte(b []byte) (byte, []byte, error) {
+func shiftByte(b []byte) (byte, []byte, error) {
 	if len(b) == 0 {
 		return 0, b, io.EOF
 	}
 	return b[0], b[1:], nil
 }
 
-func ShiftBytes(b []byte, length int) ([]byte, []byte, error) {
+func shiftBytes(b []byte, length int) ([]byte, []byte, error) {
 	if len(b) < length {
 		return nil, b, ErrValueUnderflow
 	}
@@ -23,15 +23,15 @@ func ShiftBytes(b []byte, length int) ([]byte, []byte, error) {
 	return output, b[length:], nil
 }
 
-func ShiftInt8(b []byte) (int8, []byte, error) {
-	v, b, err := ShiftByte(b)
+func shiftInt8(b []byte) (int8, []byte, error) {
+	v, b, err := shiftByte(b)
 	if err != nil {
 		return 0, b, err
 	}
 	return int8(v), b, nil
 }
 
-func ShiftInt16(b []byte) (int16, []byte, error) {
+func shiftInt16(b []byte) (int16, []byte, error) {
 	if len(b) < 2 {
 		return 0, b, ErrValueUnderflow
 	}
@@ -39,7 +39,7 @@ func ShiftInt16(b []byte) (int16, []byte, error) {
 	return i, b[2:], nil
 }
 
-func ShiftInt32(b []byte) (int32, []byte, error) {
+func shiftInt32(b []byte) (int32, []byte, error) {
 	if len(b) < 4 {
 		return 0, b, ErrValueUnderflow
 	}
@@ -49,7 +49,7 @@ func ShiftInt32(b []byte) (int32, []byte, error) {
 
 var zero []byte = []byte{0}
 
-func ShiftString(b []byte) (string, []byte, error) {
+func shiftString(b []byte) (string, []byte, error) {
 	s, b, found := bytes.Cut(b, zero)
 	if found {
 		return unsafe.String(unsafe.SliceData(s), len(s)), b, nil
@@ -57,39 +57,39 @@ func ShiftString(b []byte) (string, []byte, error) {
 	return "", b, ErrValueUnderflow
 }
 
-func AppendByte(b []byte, i ...byte) []byte {
+func appendByte(b []byte, i ...byte) []byte {
 	return append(b, i...)
 }
 
-func AppendInt8(b []byte, i ...int8) []byte {
+func appendInt8(b []byte, i ...int8) []byte {
 	for _, v := range i {
 		b = append(b, byte(v))
 	}
 	return b
 }
 
-func AppendInt16(b []byte, i ...int16) []byte {
+func appendInt16(b []byte, i ...int16) []byte {
 	for _, v := range i {
 		b = binary.BigEndian.AppendUint16(b, uint16(v))
 	}
 	return b
 }
 
-func AppendInt32(b []byte, i ...int32) []byte {
+func appendInt32(b []byte, i ...int32) []byte {
 	for _, v := range i {
 		b = binary.BigEndian.AppendUint32(b, uint32(v))
 	}
 	return b
 }
 
-func AppendInt64(b []byte, i ...int64) []byte {
+func appendInt64(b []byte, i ...int64) []byte {
 	for _, v := range i {
 		b = binary.BigEndian.AppendUint64(b, uint64(v))
 	}
 	return b
 }
 
-func AppendString(b []byte, s ...string) []byte {
+func appendString(b []byte, s ...string) []byte {
 	for _, v := range s {
 		b = append(b, v...)
 		b = append(b, 0)

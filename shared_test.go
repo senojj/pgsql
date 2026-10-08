@@ -1,13 +1,12 @@
-package pgwire_test
+package pgsql
 
 import (
-	"gopsql/pgwire"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func testMessage(t *testing.T, b []byte, m pgwire.Message, fn func(*testing.T)) {
+func testMessage(t *testing.T, b []byte, m message, fn func(*testing.T)) {
 	t.Run("UnmarshalBinary", func(t *testing.T) {
 		err := m.UnmarshalBinary(b)
 		require.NoError(t, err)

@@ -1,12 +1,7 @@
-package pgwire
+package pgsql
 
 import (
 	"fmt"
-	"gopsql/pgio"
-)
-
-var (
-	nullByte = []byte{0}
 )
 
 func invalidFormat(cause error) error {
@@ -22,25 +17,25 @@ func unexpectedAuth(got, want int32) error {
 }
 
 func shiftLength(in []byte) ([]byte, error) {
-	length, b, err := pgio.ShiftInt32(in)
+	length, b, err := shiftInt32(in)
 	if err != nil {
 		return in, err
 	}
 
 	if length < 4 {
-		return in, pgio.ErrValueUnderflow
+		return in, ErrValueUnderflow
 	}
 
 	size := int(length) - 4
 
 	if size > len(b) {
-		return in, pgio.ErrValueUnderflow
+		return in, ErrValueUnderflow
 	}
 	return b[:size], nil
 }
 
 func shiftHeader(msg byte, in []byte) ([]byte, error) {
-	kind, b, err := pgio.ShiftByte(in)
+	kind, b, err := shiftByte(in)
 	if err != nil {
 		return in, err
 	}

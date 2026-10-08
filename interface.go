@@ -1,22 +1,22 @@
-package pgwire
+package pgsql
 
 import "encoding"
 
-type Message interface {
+type message interface {
 	encoding.BinaryAppender
 	encoding.BinaryUnmarshaler
 
 	message()
 }
 
-type Backend interface {
-	Message
+type backend interface {
+	message
 
 	backend()
 }
 
-type Frontend interface {
-	Message
+type frontend interface {
+	message
 
 	frontend()
 }
