@@ -13,6 +13,12 @@ const (
 )
 
 const (
+	encHigh               int32 = 1234
+	encLow                int32 = 5680
+	codeEncryptionRequest int32 = encLow | encHigh<<16
+)
+
+const (
 	major3             int32 = 3
 	minor2             int32 = 2
 	protocolVersion3_2 int32 = minor2 | major3<<16
