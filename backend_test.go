@@ -253,13 +253,13 @@ func TestMsgNoticeResponse(t *testing.T) {
 	buf.AppendByte(fieldCode)
 	buf.AppendString("00000")
 	buf.AppendByte(fieldMessage)
-	buf.AppendString("hello world")	
+	buf.AppendString("hello world")
 	buf.AppendByte(0)
 
 	var m msgNoticeResponse
 
 	testMessage(t, buf.Bytes(), &m, func(t *testing.T) {
-		require.Len(t, m.Fields, 3) 
+		require.Len(t, m.Fields, 3)
 		require.Len(t, m.Values, 3)
 		require.Equal(t, fieldSeverity, m.Fields[0])
 		require.Equal(t, "ERROR", m.Values[0])

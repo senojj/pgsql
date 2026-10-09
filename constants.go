@@ -109,5 +109,5 @@ const (
 const (
 	sizeMessageType   = 1
 	sizeMessageLength = 4
-	sizeAuth      	  = 4
+	sizeAuth          = 4
 )
