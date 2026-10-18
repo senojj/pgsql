@@ -1,10 +1,16 @@
-package pgsql
+package pgmsg_test
 
 import (
+	"encoding"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
+
+type message interface {
+	encoding.BinaryAppender
+	encoding.BinaryUnmarshaler
+}
 
 func testMessage(t *testing.T, b []byte, m message, fn func(*testing.T)) {
 	t.Run("UnmarshalBinary", func(t *testing.T) {

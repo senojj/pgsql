@@ -1,4 +1,4 @@
-module pgsql
+module github.com/senojj/pgsql
 
 go 1.27
 
