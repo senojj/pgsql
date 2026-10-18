@@ -3,10 +3,12 @@ package pgmsg
 import (
 	"math"
 
-	"github.com/senojj/pgsql/pgio"
+	"github.com/senojj/pgsql/pgproto/pgio"
 )
 
 type AuthenticationOk struct{}
+
+func (_ *AuthenticationOk) backend() {}
 
 func (x *AuthenticationOk) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength + sizeAuth
@@ -14,14 +16,14 @@ func (x *AuthenticationOk) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeOk)
+	buf.AppendInt32(authTypeOk)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationOk) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -31,8 +33,8 @@ func (x *AuthenticationOk) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeOk != auth {
-		return unexpectedAuth(auth, AuthTypeOk)
+	if authTypeOk != auth {
+		return unexpectedAuth(auth, authTypeOk)
 	}
 
 	if len(b) > 0 {
@@ -43,20 +45,22 @@ func (x *AuthenticationOk) UnmarshalBinary(b []byte) error {
 
 type AuthenticationKerberosV5 struct{}
 
+func (_ *AuthenticationKerberosV5) backend() {}
+
 func (x *AuthenticationKerberosV5) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength + sizeAuth
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeKerberosV5)
+	buf.AppendInt32(authTypeKerberosV5)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationKerberosV5) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -66,8 +70,8 @@ func (x *AuthenticationKerberosV5) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeKerberosV5 != auth {
-		return unexpectedAuth(auth, AuthTypeKerberosV5)
+	if authTypeKerberosV5 != auth {
+		return unexpectedAuth(auth, authTypeKerberosV5)
 	}
 
 	if len(b) > 0 {
@@ -78,20 +82,22 @@ func (x *AuthenticationKerberosV5) UnmarshalBinary(b []byte) error {
 
 type AuthenticationCleartextPassword struct{}
 
+func (_ *AuthenticationCleartextPassword) backend() {}
+
 func (x *AuthenticationCleartextPassword) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength + sizeAuth
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeClearTextPassword)
+	buf.AppendInt32(authTypeClearTextPassword)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationCleartextPassword) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -101,8 +107,8 @@ func (x *AuthenticationCleartextPassword) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeClearTextPassword != auth {
-		return unexpectedAuth(auth, AuthTypeClearTextPassword)
+	if authTypeClearTextPassword != auth {
+		return unexpectedAuth(auth, authTypeClearTextPassword)
 	}
 
 	if len(b) > 0 {
@@ -115,6 +121,8 @@ type AuthenticationMD5Password struct {
 	Salt [4]byte
 }
 
+func (_ *AuthenticationMD5Password) backend() {}
+
 func (x *AuthenticationMD5Password) AppendBinary(b []byte) ([]byte, error) {
 	const sizeSalt = 4
 	const length = sizeMessageLength + sizeAuth + sizeSalt
@@ -122,15 +130,15 @@ func (x *AuthenticationMD5Password) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeMD5Password)
+	buf.AppendInt32(authTypeMD5Password)
 	buf.AppendByte(x.Salt[:]...)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationMD5Password) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -140,8 +148,8 @@ func (x *AuthenticationMD5Password) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeMD5Password != auth {
-		return unexpectedAuth(auth, AuthTypeMD5Password)
+	if authTypeMD5Password != auth {
+		return unexpectedAuth(auth, authTypeMD5Password)
 	}
 	copy(x.Salt[:], b)
 	return nil
@@ -149,20 +157,22 @@ func (x *AuthenticationMD5Password) UnmarshalBinary(b []byte) error {
 
 type AuthenticationGSS struct{}
 
+func (_ *AuthenticationGSS) backend() {}
+
 func (x *AuthenticationGSS) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength + sizeAuth
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeGSS)
+	buf.AppendInt32(authTypeGSS)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationGSS) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -172,8 +182,8 @@ func (x *AuthenticationGSS) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeGSS != auth {
-		return unexpectedAuth(auth, AuthTypeGSS)
+	if authTypeGSS != auth {
+		return unexpectedAuth(auth, authTypeGSS)
 	}
 	if len(b) > 0 {
 		return invalidFormat(pgio.ErrValueOverflow)
@@ -184,6 +194,8 @@ func (x *AuthenticationGSS) UnmarshalBinary(b []byte) error {
 type AuthenticationGSSContinue struct {
 	Data []byte
 }
+
+func (_ *AuthenticationGSSContinue) backend() {}
 
 func (x *AuthenticationGSSContinue) AppendBinary(b []byte) ([]byte, error) {
 	sizeData := len(x.Data)
@@ -197,15 +209,15 @@ func (x *AuthenticationGSSContinue) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeGSSContinue)
+	buf.AppendInt32(authTypeGSSContinue)
 	buf.AppendByte(x.Data...)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationGSSContinue) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -215,8 +227,8 @@ func (x *AuthenticationGSSContinue) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeGSSContinue != auth {
-		return unexpectedAuth(auth, AuthTypeGSSContinue)
+	if authTypeGSSContinue != auth {
+		return unexpectedAuth(auth, authTypeGSSContinue)
 	}
 	x.Data = make([]byte, len(b))
 	copy(x.Data, b)
@@ -225,20 +237,22 @@ func (x *AuthenticationGSSContinue) UnmarshalBinary(b []byte) error {
 
 type AuthenticationSSPI struct{}
 
+func (_ *AuthenticationSSPI) backend() {}
+
 func (x *AuthenticationSSPI) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength + sizeAuth
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeSSPI)
+	buf.AppendInt32(authTypeSSPI)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationSSPI) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -248,8 +262,8 @@ func (x *AuthenticationSSPI) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeSSPI != auth {
-		return unexpectedAuth(auth, AuthTypeSSPI)
+	if authTypeSSPI != auth {
+		return unexpectedAuth(auth, authTypeSSPI)
 	}
 
 	if len(b) > 0 {
@@ -261,6 +275,8 @@ func (x *AuthenticationSSPI) UnmarshalBinary(b []byte) error {
 type AuthenticationSASL struct {
 	Mechanisms []string
 }
+
+func (_ *AuthenticationSASL) backend() {}
 
 func (x *AuthenticationSASL) AppendBinary(b []byte) ([]byte, error) {
 	countMechanisms := len(x.Mechanisms)
@@ -281,16 +297,16 @@ func (x *AuthenticationSASL) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeSASL)
+	buf.AppendInt32(authTypeSASL)
 	buf.AppendString(x.Mechanisms...)
 	buf.AppendByte(0)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationSASL) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -302,8 +318,8 @@ func (x *AuthenticationSASL) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeSASL != auth {
-		return unexpectedAuth(auth, AuthTypeSASL)
+	if authTypeSASL != auth {
+		return unexpectedAuth(auth, authTypeSASL)
 	}
 	x.Mechanisms = make([]string, 0, buf.Count(pgio.Zero))
 
@@ -328,6 +344,8 @@ type AuthenticationSASLContinue struct {
 	Data []byte
 }
 
+func (_ *AuthenticationSASLContinue) backend() {}
+
 func (x *AuthenticationSASLContinue) AppendBinary(b []byte) ([]byte, error) {
 	sizeData := len(x.Data)
 
@@ -341,15 +359,15 @@ func (x *AuthenticationSASLContinue) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeSASLContinue)
+	buf.AppendInt32(authTypeSASLContinue)
 	buf.AppendByte(x.Data...)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationSASLContinue) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -359,8 +377,8 @@ func (x *AuthenticationSASLContinue) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeSASLContinue != auth {
-		return unexpectedAuth(auth, AuthTypeSASLContinue)
+	if authTypeSASLContinue != auth {
+		return unexpectedAuth(auth, authTypeSASLContinue)
 	}
 	x.Data = make([]byte, len(b))
 	copy(x.Data, b)
@@ -370,6 +388,8 @@ func (x *AuthenticationSASLContinue) UnmarshalBinary(b []byte) error {
 type AuthenticationSASLFinal struct {
 	Data []byte
 }
+
+func (_ *AuthenticationSASLFinal) backend() {}
 
 func (x *AuthenticationSASLFinal) AppendBinary(b []byte) ([]byte, error) {
 	sizeData := len(x.Data)
@@ -384,15 +404,15 @@ func (x *AuthenticationSASLFinal) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeAuthentication)
+	buf.AppendByte(typeAuthentication)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(AuthTypeSASLFinal)
+	buf.AppendInt32(authTypeSASLFinal)
 	buf.AppendByte(x.Data...)
 	return buf.Bytes, nil
 }
 
 func (x *AuthenticationSASLFinal) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeAuthentication, b)
+	b, err := shiftHeader(typeAuthentication, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -402,8 +422,8 @@ func (x *AuthenticationSASLFinal) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if AuthTypeSASLFinal != auth {
-		return unexpectedAuth(auth, AuthTypeSASLFinal)
+	if authTypeSASLFinal != auth {
+		return unexpectedAuth(auth, authTypeSASLFinal)
 	}
 	x.Data = make([]byte, len(b))
 	copy(x.Data, b)

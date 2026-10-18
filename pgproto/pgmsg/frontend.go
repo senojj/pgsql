@@ -3,7 +3,7 @@ package pgmsg
 import (
 	"math"
 
-	"github.com/senojj/pgsql/pgio"
+	"github.com/senojj/pgsql/pgproto/pgio"
 )
 
 type Bind struct {
@@ -13,6 +13,8 @@ type Bind struct {
 	ParameterData        [][]byte
 	ColumnFormatCodes    []byte
 }
+
+func (_ *Bind) frontend() {}
 
 func (x *Bind) AppendBinary(b []byte) ([]byte, error) {
 	const sizeParamFmtCodeCount = 2
@@ -72,7 +74,7 @@ func (x *Bind) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeBind)
+	buf.AppendByte(typeBind)
 	buf.AppendInt32(int32(length))
 	buf.AppendString(x.DestinationName)
 	buf.AppendString(x.SourceName)
@@ -98,7 +100,7 @@ func (x *Bind) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *Bind) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeBind, b)
+	b, err := shiftHeader(typeBind, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -179,6 +181,8 @@ type CancelRequest struct {
 	SecretKey []byte
 }
 
+func (_ *CancelRequest) frontend() {}
+
 func (x *CancelRequest) AppendBinary(b []byte) ([]byte, error) {
 	const sizeCode = 4
 	const sizeProcessID = 4
@@ -201,7 +205,7 @@ func (x *CancelRequest) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(length)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(CodeCancelRequest)
+	buf.AppendInt32(codeCancelRequest)
 	buf.AppendInt32(x.ProcessID)
 	buf.AppendByte(x.SecretKey...)
 	return buf.Bytes, nil
@@ -220,7 +224,7 @@ func (x *CancelRequest) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if code != CodeCancelRequest {
+	if code != codeCancelRequest {
 		return invalidFormat(ErrUnknownCode)
 	}
 
@@ -240,6 +244,8 @@ type Close struct {
 	ObjectName string
 }
 
+func (_ *Close) frontend() {}
+
 func (x *Close) AppendBinary(b []byte) ([]byte, error) {
 	const sizeType = 1
 
@@ -255,7 +261,7 @@ func (x *Close) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeClose)
+	buf.AppendByte(typeClose)
 	buf.AppendInt32(int32(length))
 	buf.AppendByte(x.ObjectKind)
 	buf.AppendString(x.ObjectName)
@@ -263,7 +269,7 @@ func (x *Close) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *Close) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeClose, b)
+	b, err := shiftHeader(typeClose, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -288,6 +294,8 @@ type CopyFail struct {
 	Message string
 }
 
+func (_ *CopyFail) frontend() {}
+
 func (x *CopyFail) AppendBinary(b []byte) ([]byte, error) {
 	sizeMessage := len(x.Message) + 1 // null terminated string
 	length := sizeMessageLength + sizeMessage
@@ -300,14 +308,14 @@ func (x *CopyFail) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeCopyFail)
+	buf.AppendByte(typeCopyFail)
 	buf.AppendInt32(int32(length))
 	buf.AppendString(x.Message)
 	return buf.Bytes, nil
 }
 
 func (x *CopyFail) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeCopyFail, b)
+	b, err := shiftHeader(typeCopyFail, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -329,6 +337,8 @@ type Describe struct {
 	ObjectName string
 }
 
+func (_ *Describe) frontend() {}
+
 func (x *Describe) AppendBinary(b []byte) ([]byte, error) {
 	const sizeType = 1
 
@@ -344,7 +354,7 @@ func (x *Describe) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeDescribe)
+	buf.AppendByte(typeDescribe)
 	buf.AppendInt32(int32(length))
 	buf.AppendByte(x.ObjectKind)
 	buf.AppendString(x.ObjectName)
@@ -352,7 +362,7 @@ func (x *Describe) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *Describe) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeDescribe, b)
+	b, err := shiftHeader(typeDescribe, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -379,6 +389,8 @@ type Execute struct {
 	RowLimit   int32
 }
 
+func (_ *Execute) frontend() {}
+
 func (x *Execute) AppendBinary(b []byte) ([]byte, error) {
 	const sizeRowLimit = 4
 
@@ -394,7 +406,7 @@ func (x *Execute) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeExecute)
+	buf.AppendByte(typeExecute)
 	buf.AppendInt32(int32(length))
 	buf.AppendString(x.PortalName)
 	buf.AppendInt32(x.RowLimit)
@@ -402,7 +414,7 @@ func (x *Execute) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *Execute) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeExecute, b)
+	b, err := shiftHeader(typeExecute, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -426,19 +438,21 @@ func (x *Execute) UnmarshalBinary(b []byte) error {
 
 type Flush struct{}
 
+func (_ *Flush) frontend() {}
+
 func (x *Flush) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeFlush)
+	buf.AppendByte(typeFlush)
 	buf.AppendInt32(int32(length))
 	return buf.Bytes, nil
 }
 
 func (x *Flush) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeFlush, b)
+	b, err := shiftHeader(typeFlush, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -461,6 +475,8 @@ type FunctionCall struct {
 	ArgumentValues [][]byte
 	ResultFormat   byte
 }
+
+func (_ *FunctionCall) frontend() {}
 
 func (x *FunctionCall) AppendBinary(b []byte) ([]byte, error) {
 	const sizeObjectID = 4
@@ -510,7 +526,7 @@ func (x *FunctionCall) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeFunctionCall)
+	buf.AppendByte(typeFunctionCall)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt32(x.ObjectID)
 	buf.AppendInt16(int16(countFormats))
@@ -531,7 +547,7 @@ func (x *FunctionCall) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *FunctionCall) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeFunctionCall, b)
+	b, err := shiftHeader(typeFunctionCall, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -587,6 +603,8 @@ func (x *FunctionCall) UnmarshalBinary(b []byte) error {
 
 type GSSENCRequest struct{}
 
+func (_ *GSSENCRequest) frontend() {}
+
 func (x *GSSENCRequest) AppendBinary(b []byte) ([]byte, error) {
 	const sizeCode = 4
 	const length = sizeMessageLength + sizeCode
@@ -594,7 +612,7 @@ func (x *GSSENCRequest) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(length)
 	buf.AppendInt32(length)
-	buf.AppendInt32(CodeEncryptionRequest)
+	buf.AppendInt32(codeEncryptionRequest)
 	return buf.Bytes, nil
 }
 
@@ -609,7 +627,7 @@ func (x *GSSENCRequest) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if code != CodeEncryptionRequest {
+	if code != codeEncryptionRequest {
 		return invalidFormat(ErrUnknownCode)
 	}
 
@@ -623,6 +641,8 @@ type GSSResponse struct {
 	Data []byte
 }
 
+func (_ *GSSResponse) frontend() {}
+
 func (x *GSSResponse) AppendBinary(b []byte) ([]byte, error) {
 	length := sizeMessageLength + len(x.Data)
 
@@ -633,14 +653,14 @@ func (x *GSSResponse) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeGSSResponse)
+	buf.AppendByte(typeGSSResponse)
 	buf.AppendInt32(int32(length))
 	buf.AppendByte(x.Data...)
 	return buf.Bytes, nil
 }
 
 func (x *GSSResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeGSSResponse, b)
+	b, err := shiftHeader(typeGSSResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -655,6 +675,8 @@ type Parse struct {
 	DestinationStatementName string
 	Query                    string
 }
+
+func (_ *Parse) frontend() {}
 
 func (x *Parse) AppendBinary(b []byte) ([]byte, error) {
 	const sizeParameterDataType = 4
@@ -684,7 +706,7 @@ func (x *Parse) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(byte(TypeParse))
+	buf.AppendByte(byte(typeParse))
 	buf.AppendInt32(int32(length))
 	buf.AppendString(x.DestinationStatementName)
 	buf.AppendString(x.Query)
@@ -697,7 +719,7 @@ func (x *Parse) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *Parse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeParse, b)
+	b, err := shiftHeader(typeParse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -739,6 +761,8 @@ type PasswordMessage struct {
 	Password string
 }
 
+func (_ *PasswordMessage) frontend() {}
+
 func (x *PasswordMessage) AppendBinary(b []byte) ([]byte, error) {
 	sizePassword := len(x.Password) + 1 // null terminated string
 
@@ -753,14 +777,14 @@ func (x *PasswordMessage) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(TypePasswordMessage)
+	buf.AppendByte(typePasswordMessage)
 	buf.AppendInt32(int32(length))
 	buf.AppendString(x.Password)
 	return buf.Bytes, nil
 }
 
 func (x *PasswordMessage) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypePasswordMessage, b)
+	b, err := shiftHeader(typePasswordMessage, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -782,6 +806,8 @@ type Query struct {
 	Value string
 }
 
+func (_ *Query) frontend() {}
+
 func (x *Query) AppendBinary(b []byte) ([]byte, error) {
 	sizeQuery := len(x.Value)
 
@@ -792,14 +818,14 @@ func (x *Query) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(TypeQuery)
+	buf.AppendByte(typeQuery)
 	buf.AppendInt32(int32(length))
 	buf.AppendString(x.Value)
 	return buf.Bytes, nil
 }
 
 func (x *Query) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeQuery, b)
+	b, err := shiftHeader(typeQuery, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -821,6 +847,8 @@ type SASLInitialResponse struct {
 	Name     string
 	Response []byte // will be nil when there is no initial response.
 }
+
+func (_ *SASLInitialResponse) frontend() {}
 
 func (x *SASLInitialResponse) AppendBinary(b []byte) ([]byte, error) {
 	const sizeMechanism = 4
@@ -846,7 +874,7 @@ func (x *SASLInitialResponse) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(TypeSASLInitialResponse)
+	buf.AppendByte(typeSASLInitialResponse)
 	buf.AppendInt32(int32(length))
 	buf.AppendString(x.Name)
 	buf.AppendInt32(int32(sizeResponse))
@@ -855,7 +883,7 @@ func (x *SASLInitialResponse) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *SASLInitialResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeSASLInitialResponse, b)
+	b, err := shiftHeader(typeSASLInitialResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -890,6 +918,8 @@ type SASLResponse struct {
 	Data []byte
 }
 
+func (_ *SASLResponse) frontend() {}
+
 func (x *SASLResponse) AppendBinary(b []byte) ([]byte, error) {
 	sizeData := len(x.Data)
 
@@ -904,14 +934,14 @@ func (x *SASLResponse) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(TypeSASLResponse)
+	buf.AppendByte(typeSASLResponse)
 	buf.AppendInt32(int32(length))
 	buf.AppendByte(x.Data...)
 	return buf.Bytes, nil
 }
 
 func (x *SASLResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeSASLResponse, b)
+	b, err := shiftHeader(typeSASLResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -923,6 +953,8 @@ func (x *SASLResponse) UnmarshalBinary(b []byte) error {
 
 type SSLRequest struct{}
 
+func (_ *SSLRequest) frontend() {}
+
 func (x *SSLRequest) AppendBinary(b []byte) ([]byte, error) {
 	const sizeCode = 4
 
@@ -932,7 +964,7 @@ func (x *SSLRequest) AppendBinary(b []byte) ([]byte, error) {
 
 	buf.Grow(length)
 	buf.AppendInt32(int32(length))
-	buf.AppendInt32(CodeSSLRequest)
+	buf.AppendInt32(codeSSLRequest)
 	return buf.Bytes, nil
 }
 
@@ -947,7 +979,7 @@ func (x *SSLRequest) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	if code != CodeSSLRequest {
+	if code != codeSSLRequest {
 		return invalidFormat(ErrUnknownCode)
 	}
 
@@ -961,6 +993,8 @@ type StartupMessage struct {
 	ProtocolVersion int32
 	Parameters      map[string]string
 }
+
+func (_ *StartupMessage) frontend() {}
 
 func (x *StartupMessage) AppendBinary(b []byte) ([]byte, error) {
 	const sizeProtocolVersion = 4

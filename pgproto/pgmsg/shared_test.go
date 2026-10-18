@@ -1,4 +1,4 @@
-package pgmsg_test
+package pgmsg
 
 import (
 	"encoding"

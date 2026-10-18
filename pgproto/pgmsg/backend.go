@@ -2,14 +2,16 @@ package pgmsg
 
 import (
 	"math"
-	
-	"github.com/senojj/pgsql/pgio"
+
+	"github.com/senojj/pgsql/pgproto/pgio"
 )
 
 type BackendKeyData struct {
 	ProcessID int32
 	SecretKey []byte
 }
+
+func (_ *BackendKeyData) backend() {}
 
 func (x *BackendKeyData) AppendBinary(b []byte) ([]byte, error) {
 	const sizeProcessID = 4
@@ -33,7 +35,7 @@ func (x *BackendKeyData) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeBackendKeyData)
+	buf.AppendByte(typeBackendKeyData)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt32(x.ProcessID)
 	buf.AppendByte(x.SecretKey...)
@@ -41,7 +43,7 @@ func (x *BackendKeyData) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *BackendKeyData) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeBackendKeyData, b)
+	b, err := shiftHeader(typeBackendKeyData, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -70,19 +72,21 @@ func (x *BackendKeyData) UnmarshalBinary(b []byte) error {
 
 type BindComplete struct{}
 
+func (_ *BindComplete) backend() {}
+
 func (x *BindComplete) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeBindComplete)
+	buf.AppendByte(typeBindComplete)
 	buf.AppendInt32(int32(length))
 	return buf.Bytes, nil
 }
 
 func (x *BindComplete) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeBindComplete, b)
+	b, err := shiftHeader(typeBindComplete, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -95,19 +99,21 @@ func (x *BindComplete) UnmarshalBinary(b []byte) error {
 
 type CloseComplete struct{}
 
+func (_ *CloseComplete) backend() {}
+
 func (x *CloseComplete) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeCloseComplete)
+	buf.AppendByte(typeCloseComplete)
 	buf.AppendInt32(int32(length))
 	return buf.Bytes, nil
 }
 
 func (x *CloseComplete) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeCloseComplete, b)
+	b, err := shiftHeader(typeCloseComplete, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -122,6 +128,8 @@ type CommandComplete struct {
 	Tag string
 }
 
+func (_ *CommandComplete) backend() {}
+
 func (x *CommandComplete) AppendBinary(b []byte) ([]byte, error) {
 	sizeTag := len(x.Tag) + 1 // null terminated string
 	length := sizeMessageLength + sizeTag
@@ -134,14 +142,14 @@ func (x *CommandComplete) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeCommandComplete)
+	buf.AppendByte(typeCommandComplete)
 	buf.AppendInt32(int32(length))
 	buf.AppendString(x.Tag)
 	return buf.Bytes, nil
 }
 
 func (x *CommandComplete) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeCommandComplete, b)
+	b, err := shiftHeader(typeCommandComplete, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -160,6 +168,8 @@ type CopyInResponse struct {
 	Format  int8
 	Columns []int16
 }
+
+func (_ *CopyInResponse) backend() {}
 
 func (x *CopyInResponse) AppendBinary(b []byte) ([]byte, error) {
 	const sizeFormat = 1
@@ -187,7 +197,7 @@ func (x *CopyInResponse) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeCopyInResponse)
+	buf.AppendByte(typeCopyInResponse)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt8(x.Format)
 	buf.AppendInt16(int16(countCols))
@@ -196,7 +206,7 @@ func (x *CopyInResponse) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *CopyInResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeCopyInResponse, b)
+	b, err := shiftHeader(typeCopyInResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -232,6 +242,8 @@ type CopyOutResponse struct {
 	Columns []int16
 }
 
+func (_ *CopyOutResponse) backend() {}
+
 func (x *CopyOutResponse) AppendBinary(b []byte) ([]byte, error) {
 	const sizeFormat = 1
 	const sizeColCount = 2
@@ -258,7 +270,7 @@ func (x *CopyOutResponse) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeCopyOutResponse)
+	buf.AppendByte(typeCopyOutResponse)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt8(x.Format)
 	buf.AppendInt16(int16(countCols))
@@ -267,7 +279,7 @@ func (x *CopyOutResponse) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *CopyOutResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeCopyOutResponse, b)
+	b, err := shiftHeader(typeCopyOutResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -303,6 +315,8 @@ type CopyBothResponse struct {
 	Columns []int16
 }
 
+func (_ *CopyBothResponse) backend() {}
+
 func (x *CopyBothResponse) AppendBinary(b []byte) ([]byte, error) {
 	const sizeFormat = 1
 	const sizeColCount = 2
@@ -329,7 +343,7 @@ func (x *CopyBothResponse) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeCopyBothResponse)
+	buf.AppendByte(typeCopyBothResponse)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt8(x.Format)
 	buf.AppendInt16(int16(countCols))
@@ -338,7 +352,7 @@ func (x *CopyBothResponse) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *CopyBothResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeCopyBothResponse, b)
+	b, err := shiftHeader(typeCopyBothResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -376,6 +390,8 @@ type DataRow struct {
 	Columns [][]byte
 }
 
+func (_ *DataRow) backend() {}
+
 func (x *DataRow) AppendBinary(b []byte) ([]byte, error) {
 	const sizeColCount = 2
 	const sizeColLength = 4
@@ -409,7 +425,7 @@ func (x *DataRow) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeDataRow)
+	buf.AppendByte(typeDataRow)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt16(int16(countCols))
 
@@ -427,7 +443,7 @@ func (x *DataRow) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *DataRow) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeDataRow, b)
+	b, err := shiftHeader(typeDataRow, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -464,19 +480,21 @@ func (x *DataRow) UnmarshalBinary(b []byte) error {
 
 type EmptyQueryResponse struct{}
 
+func (_ *EmptyQueryResponse) backend() {}
+
 func (x *EmptyQueryResponse) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeEmptyQueryResponse)
+	buf.AppendByte(typeEmptyQueryResponse)
 	buf.AppendInt32(int32(length))
 	return buf.Bytes, nil
 }
 
 func (x *EmptyQueryResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeEmptyQueryResponse, b)
+	b, err := shiftHeader(typeEmptyQueryResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -491,6 +509,8 @@ type ErrorResponse struct {
 	Fields []byte
 	Values []string
 }
+
+func (_ *ErrorResponse) backend() {}
 
 func (x *ErrorResponse) AppendBinary(b []byte) ([]byte, error) {
 	const sizeField = 1
@@ -517,7 +537,7 @@ func (x *ErrorResponse) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeErrorResponse)
+	buf.AppendByte(typeErrorResponse)
 	buf.AppendInt32(int32(length))
 
 	for i := range countFields {
@@ -529,7 +549,7 @@ func (x *ErrorResponse) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *ErrorResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeErrorResponse, b)
+	b, err := shiftHeader(typeErrorResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -569,6 +589,8 @@ type FunctionCallResponse struct {
 	Result []byte
 }
 
+func (_ *FunctionCallResponse) backend() {}
+
 func (x *FunctionCallResponse) AppendBinary(b []byte) ([]byte, error) {
 	const sizeResultLength = 4
 	sizeResult := len(x.Result)
@@ -585,7 +607,7 @@ func (x *FunctionCallResponse) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeFunctionCallResponse)
+	buf.AppendByte(typeFunctionCallResponse)
 	buf.AppendInt32(int32(length))
 
 	if x.Result == nil {
@@ -598,7 +620,7 @@ func (x *FunctionCallResponse) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *FunctionCallResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeFunctionCallResponse, b)
+	b, err := shiftHeader(typeFunctionCallResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -620,6 +642,8 @@ type NegotiateProtocolVersion struct {
 	MinorVersionSupported int32
 	UnrecognizedOptions   []string
 }
+
+func (_ *NegotiateProtocolVersion) backend() {}
 
 func (x *NegotiateProtocolVersion) AppendBinary(b []byte) ([]byte, error) {
 	const sizeMinorVersion = 4
@@ -647,7 +671,7 @@ func (x *NegotiateProtocolVersion) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeNegotiateProtocolVersion)
+	buf.AppendByte(typeNegotiateProtocolVersion)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt32(x.MinorVersionSupported)
 	buf.AppendInt32(int32(countUnrecognizedOptions))
@@ -656,7 +680,7 @@ func (x *NegotiateProtocolVersion) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *NegotiateProtocolVersion) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeNegotiateProtocolVersion, b)
+	b, err := shiftHeader(typeNegotiateProtocolVersion, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -689,19 +713,21 @@ func (x *NegotiateProtocolVersion) UnmarshalBinary(b []byte) error {
 
 type NoData struct{}
 
+func (_ *NoData) backend() {}
+
 func (x *NoData) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeNoData)
+	buf.AppendByte(typeNoData)
 	buf.AppendInt32(length)
 	return buf.Bytes, nil
 }
 
 func (x *NoData) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeNoData, b)
+	b, err := shiftHeader(typeNoData, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -716,6 +742,8 @@ type NoticeResponse struct {
 	Fields []byte
 	Values []string
 }
+
+func (_ *NoticeResponse) backend() {}
 
 func (x *NoticeResponse) AppendBinary(b []byte) ([]byte, error) {
 	countFields := len(x.Fields)
@@ -739,7 +767,7 @@ func (x *NoticeResponse) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeNoticeResponse)
+	buf.AppendByte(typeNoticeResponse)
 	buf.AppendInt32(int32(length))
 
 	for i := range countFields {
@@ -751,7 +779,7 @@ func (x *NoticeResponse) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *NoticeResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeNoticeResponse, b)
+	b, err := shiftHeader(typeNoticeResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -791,6 +819,8 @@ type NotificationResponse struct {
 	Payload   string
 }
 
+func (_ *NotificationResponse) backend() {}
+
 func (x *NotificationResponse) AppendBinary(b []byte) ([]byte, error) {
 	const sizeProcessID = 4
 
@@ -810,7 +840,7 @@ func (x *NotificationResponse) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeNotificationResponse)
+	buf.AppendByte(typeNotificationResponse)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt32(x.ProcessID)
 	buf.AppendString(x.Channel)
@@ -819,7 +849,7 @@ func (x *NotificationResponse) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *NotificationResponse) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeNotificationResponse, b)
+	b, err := shiftHeader(typeNotificationResponse, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -851,6 +881,8 @@ type ParameterDescription struct {
 	Parameters []int32
 }
 
+func (_ *ParameterDescription) backend() {}
+
 func (x *ParameterDescription) AppendBinary(b []byte) ([]byte, error) {
 	const sizeParameterCount = 2
 	const sizeParameter = 4
@@ -869,7 +901,7 @@ func (x *ParameterDescription) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeParameterDescription)
+	buf.AppendByte(typeParameterDescription)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt16(int16(countParameter))
 
@@ -880,7 +912,7 @@ func (x *ParameterDescription) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *ParameterDescription) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeParameterDescription, b)
+	b, err := shiftHeader(typeParameterDescription, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -909,6 +941,8 @@ type ParameterStatus struct {
 	Value string
 }
 
+func (_ *ParameterStatus) backend() {}
+
 func (x *ParameterStatus) AppendBinary(b []byte) ([]byte, error) {
 	sizeName := len(x.Name) + 1   // null terminated string
 	sizeValue := len(x.Value) + 1 // null terminated string
@@ -926,7 +960,7 @@ func (x *ParameterStatus) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(TypeParameterStatus)
+	buf.AppendByte(typeParameterStatus)
 	buf.AppendInt32(int32(length))
 	buf.AppendString(x.Name)
 	buf.AppendString(x.Value)
@@ -934,7 +968,7 @@ func (x *ParameterStatus) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *ParameterStatus) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeParameterStatus, b)
+	b, err := shiftHeader(typeParameterStatus, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -958,6 +992,8 @@ func (x *ParameterStatus) UnmarshalBinary(b []byte) error {
 
 type ParseComplete struct{}
 
+func (_ *ParseComplete) backend() {}
+
 func (x *ParseComplete) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength
 	const size = sizeMessageType + length
@@ -965,13 +1001,13 @@ func (x *ParseComplete) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(TypeParseComplete)
+	buf.AppendByte(typeParseComplete)
 	buf.AppendInt32(int32(length))
 	return buf.Bytes, nil
 }
 
 func (x *ParseComplete) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeParseComplete, b)
+	b, err := shiftHeader(typeParseComplete, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -984,6 +1020,8 @@ func (x *ParseComplete) UnmarshalBinary(b []byte) error {
 
 type PortalSuspended struct{}
 
+func (_ *PortalSuspended) backend() {}
+
 func (x *PortalSuspended) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength
 	const size = sizeMessageType + length
@@ -991,13 +1029,13 @@ func (x *PortalSuspended) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(TypePortalSuspend)
+	buf.AppendByte(typePortalSuspend)
 	buf.AppendInt32(int32(length))
 	return buf.Bytes, nil
 }
 
 func (x *PortalSuspended) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypePortalSuspend, b)
+	b, err := shiftHeader(typePortalSuspend, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -1012,6 +1050,8 @@ type ReadyForQuery struct {
 	TxStatus byte
 }
 
+func (_ *ReadyForQuery) backend() {}
+
 func (x *ReadyForQuery) AppendBinary(b []byte) ([]byte, error) {
 	const sizeTxStatus = 1
 	const length = sizeMessageLength + sizeTxStatus
@@ -1020,14 +1060,14 @@ func (x *ReadyForQuery) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(TypeReadyForQuery)
+	buf.AppendByte(typeReadyForQuery)
 	buf.AppendInt32(int32(length))
 	buf.AppendByte(x.TxStatus)
 	return buf.Bytes, nil
 }
 
 func (x *ReadyForQuery) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeReadyForQuery, b)
+	b, err := shiftHeader(typeReadyForQuery, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -1054,6 +1094,8 @@ type RowDescription struct {
 	Modifiers []int32
 	Formats   []int16
 }
+
+func (_ *RowDescription) backend() {}
 
 func (x *RowDescription) AppendBinary(b []byte) ([]byte, error) {
 	const (
@@ -1097,7 +1139,7 @@ func (x *RowDescription) AppendBinary(b []byte) ([]byte, error) {
 	buf := pgio.Buffer{Bytes: b}
 
 	buf.Grow(size)
-	buf.AppendByte(TypeRowDescription)
+	buf.AppendByte(typeRowDescription)
 	buf.AppendInt32(int32(length))
 	buf.AppendInt16(int16(countFields))
 
@@ -1114,7 +1156,7 @@ func (x *RowDescription) AppendBinary(b []byte) ([]byte, error) {
 }
 
 func (x *RowDescription) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeRowDescription, b)
+	b, err := shiftHeader(typeRowDescription, b)
 	if err != nil {
 		return invalidFormat(err)
 	}

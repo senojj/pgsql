@@ -3,12 +3,16 @@ package pgmsg
 import (
 	"math"
 
-	"github.com/senojj/pgsql/pgio"
+	"github.com/senojj/pgsql/pgproto/pgio"
 )
 
 type CopyData struct {
 	Data []byte
 }
+
+func (_ *CopyData) frontend() {}
+
+func (_ *CopyData) backend() {}
 
 func (x *CopyData) AppendBinary(b []byte) ([]byte, error) {
 	sizeData := len(x.Data)
@@ -22,14 +26,14 @@ func (x *CopyData) AppendBinary(b []byte) ([]byte, error) {
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeCopyData)
+	buf.AppendByte(typeCopyData)
 	buf.AppendInt32(int32(length))
 	buf.AppendByte(x.Data...)
 	return buf.Bytes, nil
 }
 
 func (x *CopyData) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeCopyData, b)
+	b, err := shiftHeader(typeCopyData, b)
 	if err != nil {
 		return invalidFormat(err)
 	}
@@ -41,19 +45,23 @@ func (x *CopyData) UnmarshalBinary(b []byte) error {
 
 type CopyDone struct{}
 
+func (_ *CopyDone) frontend() {}
+
+func (_ *CopyDone) backend() {}
+
 func (x *CopyDone) AppendBinary(b []byte) ([]byte, error) {
 	const length = sizeMessageLength
 	const size = sizeMessageType + length
 
 	buf := pgio.Buffer{Bytes: b}
 	buf.Grow(size)
-	buf.AppendByte(TypeCopyDone)
+	buf.AppendByte(typeCopyDone)
 	buf.AppendInt32(int32(length))
 	return buf.Bytes, nil
 }
 
 func (x *CopyDone) UnmarshalBinary(b []byte) error {
-	b, err := shiftHeader(TypeCopyDone, b)
+	b, err := shiftHeader(typeCopyDone, b)
 	if err != nil {
 		return invalidFormat(err)
 	}

@@ -1,10 +1,9 @@
-package pgmsg_test
+package pgmsg
 
 import (
 	"testing"
 
-	"github.com/senojj/pgsql/pgmsg"
-	"github.com/senojj/pgsql/pgio"
+	"github.com/senojj/pgsql/pgproto/pgio"
 
 	"github.com/stretchr/testify/require"
 )
@@ -13,12 +12,12 @@ func TestBackendKeyData(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeBackendKeyData)
+	buf.AppendByte(typeBackendKeyData)
 	buf.AppendInt32(19)
 	buf.AppendInt32(4321)
 	buf.AppendByte([]byte("hello world")...)
 
-	var m pgmsg.BackendKeyData
+	var m BackendKeyData
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Equal(t, int32(4321), m.ProcessID)
@@ -30,10 +29,10 @@ func TestBindComplete(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeBindComplete)
+	buf.AppendByte(typeBindComplete)
 	buf.AppendInt32(4)
 
-	var m pgmsg.BindComplete
+	var m BindComplete
 
 	testMessage(t, buf.Bytes, &m, nil)
 }
@@ -42,10 +41,10 @@ func TestCloseComplete(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeCloseComplete)
+	buf.AppendByte(typeCloseComplete)
 	buf.AppendInt32(4)
 
-	var m pgmsg.CloseComplete
+	var m CloseComplete
 
 	testMessage(t, buf.Bytes, &m, nil)
 }
@@ -54,11 +53,11 @@ func TestCommandComplete(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeCommandComplete)
+	buf.AppendByte(typeCommandComplete)
 	buf.AppendInt32(16)
 	buf.AppendString("hello world")
 
-	var m pgmsg.CommandComplete
+	var m CommandComplete
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Equal(t, "hello world", m.Tag)
@@ -69,7 +68,7 @@ func TestCopyInResponse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeCopyInResponse)
+	buf.AppendByte(typeCopyInResponse)
 	buf.AppendInt32(13)
 	buf.AppendInt8(int8(0))
 	buf.AppendInt16(3)
@@ -77,7 +76,7 @@ func TestCopyInResponse(t *testing.T) {
 	buf.AppendInt16(int16(0))
 	buf.AppendInt16(int16(0))
 
-	var m pgmsg.CopyInResponse
+	var m CopyInResponse
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Equal(t, int8(0), m.Format)
@@ -93,7 +92,7 @@ func TestCopyOutResponse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeCopyOutResponse)
+	buf.AppendByte(typeCopyOutResponse)
 	buf.AppendInt32(13)
 	buf.AppendInt8(int8(0))
 	buf.AppendInt16(3)
@@ -101,7 +100,7 @@ func TestCopyOutResponse(t *testing.T) {
 	buf.AppendInt16(int16(0))
 	buf.AppendInt16(int16(0))
 
-	var m pgmsg.CopyOutResponse
+	var m CopyOutResponse
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Equal(t, int8(0), m.Format)
@@ -117,7 +116,7 @@ func TestCopyBothResponse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeCopyBothResponse)
+	buf.AppendByte(typeCopyBothResponse)
 	buf.AppendInt32(13)
 	buf.AppendInt8(int8(0))
 	buf.AppendInt16(3)
@@ -125,7 +124,7 @@ func TestCopyBothResponse(t *testing.T) {
 	buf.AppendInt16(int16(0))
 	buf.AppendInt16(int16(0))
 
-	var m pgmsg.CopyBothResponse
+	var m CopyBothResponse
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Equal(t, int8(0), m.Format)
@@ -141,7 +140,7 @@ func TestDataRow(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeDataRow)
+	buf.AppendByte(typeDataRow)
 	buf.AppendInt32(28)
 	buf.AppendInt16(3)
 	buf.AppendInt32(5)
@@ -150,7 +149,7 @@ func TestDataRow(t *testing.T) {
 	buf.AppendInt32(5)
 	buf.AppendByte([]byte("world")...)
 
-	var m pgmsg.DataRow
+	var m DataRow
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Len(t, m.Columns, 3)
@@ -164,10 +163,10 @@ func TestEmptyQueryResponse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeEmptyQueryResponse)
+	buf.AppendByte(typeEmptyQueryResponse)
 	buf.AppendInt32(4)
 
-	var m pgmsg.EmptyQueryResponse
+	var m EmptyQueryResponse
 
 	testMessage(t, buf.Bytes, &m, nil)
 }
@@ -176,7 +175,7 @@ func TestErrorResponse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeErrorResponse)
+	buf.AppendByte(typeErrorResponse)
 	buf.AppendInt32(19)
 	buf.AppendByte('S')
 	buf.AppendString("ERROR")
@@ -184,7 +183,7 @@ func TestErrorResponse(t *testing.T) {
 	buf.AppendString("00000")
 	buf.AppendByte(0)
 
-	var m pgmsg.ErrorResponse
+	var m ErrorResponse
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Len(t, m.Fields, 2)
@@ -200,11 +199,11 @@ func TestFunctionCallResponse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeFunctionCallResponse)
+	buf.AppendByte(typeFunctionCallResponse)
 	buf.AppendInt32(8)
 	buf.AppendInt32(-1)
 
-	var m pgmsg.FunctionCallResponse
+	var m FunctionCallResponse
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Len(t, m.Result, 0)
@@ -216,14 +215,14 @@ func TestNegotiateProtocolVersion(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeNegotiateProtocolVersion)
+	buf.AppendByte(typeNegotiateProtocolVersion)
 	buf.AppendInt32(24)
 	buf.AppendInt32(1)
 	buf.AppendInt32(2)
 	buf.AppendString("hello")
 	buf.AppendString("world")
 
-	var m pgmsg.NegotiateProtocolVersion
+	var m NegotiateProtocolVersion
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Equal(t, int32(1), m.MinorVersionSupported)
@@ -237,10 +236,10 @@ func TestNoData(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeNoData)
+	buf.AppendByte(typeNoData)
 	buf.AppendInt32(4)
 
-	var m pgmsg.NoData
+	var m NoData
 
 	testMessage(t, buf.Bytes, &m, nil)
 }
@@ -249,7 +248,7 @@ func TestNoticeResponse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeNoticeResponse)
+	buf.AppendByte(typeNoticeResponse)
 	buf.AppendInt32(32)
 	buf.AppendByte('A')
 	buf.AppendString("ERROR")
@@ -259,7 +258,7 @@ func TestNoticeResponse(t *testing.T) {
 	buf.AppendString("hello world")
 	buf.AppendByte(0)
 
-	var m pgmsg.NoticeResponse
+	var m NoticeResponse
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Len(t, m.Fields, 3)
@@ -277,13 +276,13 @@ func TestNotificationResponse(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeNotificationResponse)
+	buf.AppendByte(typeNotificationResponse)
 	buf.AppendInt32(26)
 	buf.AppendInt32(123)
 	buf.AppendString("channel_a")
 	buf.AppendString("payload")
 
-	var m pgmsg.NotificationResponse
+	var m NotificationResponse
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Equal(t, int32(123), m.ProcessID)
@@ -296,14 +295,14 @@ func TestParameterDescription(t *testing.T) {
 	t.Parallel()
 
 	buf := pgio.Buffer{}
-	buf.AppendByte(pgmsg.TypeParameterDescription)
+	buf.AppendByte(typeParameterDescription)
 	buf.AppendInt32(18)
 	buf.AppendInt16(3)
 	buf.AppendInt32(3)
 	buf.AppendInt32(2)
 	buf.AppendInt32(1)
 
-	var m pgmsg.ParameterDescription
+	var m ParameterDescription
 
 	testMessage(t, buf.Bytes, &m, func(t *testing.T) {
 		require.Len(t, m.Parameters, 3)
