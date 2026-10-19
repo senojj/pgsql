@@ -2,60 +2,64 @@ package pgproto
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/senojj/pgsql/pgproto/pgmsg"
 )
 
-func (f *Frontend) Startup(
+func startup(
 	ctx context.Context,
-	protocolVersion int32,
-	parameters map[string]string,
-) error {
+	conn *Conn,
+) {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 
 	req := pgmsg.StartupMessage{
-		ProtocolVersion: protocolVersion,
-		Parameters:      parameters,
+		ProtocolVersion: conn.version,
+		Parameters:      conn.params,
 	}
 
-	err := f.encoder.Encode(&req)
+	err := conn.encoder.Encode(&req)
 	if err != nil {
-		return err
+		conn.err = err
+		return
 	}
 
-	err = f.encoder.Flush()
+	err = conn.encoder.Flush()
 	if err != nil {
-		return err
+		conn.err = err
+		return
 	}
 
 	for {
 		if err = ctx.Err(); err != nil {
-			return err
+			conn.err = err
+			return
 		}
 
-		resp, err := f.decoder.Decode()
+		resp, err := conn.decoder.Decode()
 		if err != nil {
-			return err
+			conn.err = err
+			return
 		}
 
 		switch msg := resp.(type) {
 		case *pgmsg.ErrorResponse:
-			return rtoerr(msg)
+			conn.err = rtoerr(msg)
+			return
 		case *pgmsg.ReadyForQuery:
-			println("ready for query")
-			return nil
+			conn.status = ConnectionOK
+			return
 		case *pgmsg.AuthenticationOk:
-			println("authentication OK")
 		case *pgmsg.ParameterStatus:
-			println("parameter status:", msg.Name, msg.Value)
+			conn.params[msg.Name] = msg.Value
 		case *pgmsg.BackendKeyData:
-			fmt.Printf("backend key data: %d\n", msg.ProcessID)
+			conn.processID = msg.ProcessID
 		default:
-			println("unhandled message")
-			return nil
+			conn.err = errors.New("unhandled message")	
+			return
 		}
 	}
 }
