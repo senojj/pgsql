@@ -52,7 +52,7 @@ func (f *Frontend) Startup(
 		case *pgmsg.ParameterStatus:
 			println("parameter status:", msg.Name, msg.Value)
 		case *pgmsg.BackendKeyData:
-			fmt.Printf("backend key data: %d", msg.ProcessID)
+			fmt.Printf("backend key data: %d\n", msg.ProcessID)
 		default:
 			println("unhandled message")
 			return nil
