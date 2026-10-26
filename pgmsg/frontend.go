@@ -3,7 +3,7 @@ package pgmsg
 import (
 	"math"
 
-	"github.com/senojj/pgsql/pgproto/pgio"
+	"github.com/senojj/pgsql/pgio"
 )
 
 type Bind struct {
@@ -991,7 +991,8 @@ func (x *SSLRequest) UnmarshalBinary(b []byte) error {
 
 type StartupMessage struct {
 	ProtocolVersion int32
-	Parameters      map[string]string
+	Keywords        []string
+	Values          []string
 }
 
 func (_ *StartupMessage) frontend() {}
@@ -1001,10 +1002,15 @@ func (x *StartupMessage) AppendBinary(b []byte) ([]byte, error) {
 
 	var sizeParameters int
 
-	for key, value := range x.Parameters {
-		sizeParameters += (len(key) + 1)   // null terminated string
-		sizeParameters += (len(value) + 1) // null terminated string
+	if len(x.Keywords) != len(x.Values) {
+		return b, invalidFormat(ErrParameterMismatch)
 	}
+
+	for i, keyword := range x.Keywords {
+		sizeParameters += (len(keyword) + 1)     // null terminated string
+		sizeParameters += (len(x.Values[i]) + 1) // null terminated string
+	}
+
 	sizeParameters += 1 // null terminated list
 
 	length := sizeMessageLength +
@@ -1021,9 +1027,8 @@ func (x *StartupMessage) AppendBinary(b []byte) ([]byte, error) {
 	buf.AppendInt32(int32(length))
 	buf.AppendInt32(int32(x.ProtocolVersion))
 
-	for key, value := range x.Parameters {
-		buf.AppendString(key)
-		buf.AppendString(value)
+	for i, keyword := range x.Keywords {
+		buf.AppendString(keyword, x.Values[i])
 	}
 	buf.AppendByte(0)
 	return buf.Bytes, nil
@@ -1042,7 +1047,10 @@ func (x *StartupMessage) UnmarshalBinary(b []byte) error {
 		return invalidFormat(err)
 	}
 
-	parameters := make(map[string]string)
+	count := (buf.Count(pgio.Zero) - 1)
+
+	keywords := make([]string, 0, count)
+	values := make([]string, 0, count)
 
 	key, err := buf.ShiftString()
 	if err != nil {
@@ -1054,7 +1062,8 @@ func (x *StartupMessage) UnmarshalBinary(b []byte) error {
 		if err != nil {
 			return invalidFormat(err)
 		}
-		parameters[key] = value
+		keywords = append(keywords, key)
+		values = append(values, value)
 
 		key, err = buf.ShiftString()
 		if err != nil {
@@ -1063,6 +1072,7 @@ func (x *StartupMessage) UnmarshalBinary(b []byte) error {
 	}
 
 	x.ProtocolVersion = protocolVersion
-	x.Parameters = parameters
+	x.Keywords = keywords
+	x.Values = values
 	return nil
 }

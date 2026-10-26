@@ -1,11 +1,11 @@
-package pgproto
+package pgsql
 
 import (
 	"context"
 	"errors"
 	"fmt"
 
-	"github.com/senojj/pgsql/pgproto/pgmsg"
+	"github.com/senojj/pgsql/pgmsg"
 )
 
 func startup(
@@ -13,12 +13,14 @@ func startup(
 	conn *Conn,
 ) {
 	if err := ctx.Err(); err != nil {
-		return err
+		conn.err = err
+		return
 	}
 
 	req := pgmsg.StartupMessage{
-		ProtocolVersion: conn.version,
-		Parameters:      conn.params,
+		ProtocolVersion: conn.protocol,
+		Keywords:        conn.paramKeywords,
+		Values:          conn.paramValues,
 	}
 
 	err := conn.encoder.Encode(&req)
@@ -54,11 +56,10 @@ func startup(
 			return
 		case *pgmsg.AuthenticationOk:
 		case *pgmsg.ParameterStatus:
-			conn.params[msg.Name] = msg.Value
 		case *pgmsg.BackendKeyData:
 			conn.processID = msg.ProcessID
 		default:
-			conn.err = errors.New("unhandled message")	
+			conn.err = errors.New("unhandled message")
 			return
 		}
 	}

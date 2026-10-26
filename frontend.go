@@ -1,11 +1,11 @@
-package pgproto
+package pgsql
 
 import (
 	"bytes"
 	"fmt"
 	"net"
 
-	"github.com/senojj/pgsql/pgproto/pgmsg"
+	"github.com/senojj/pgsql/pgmsg"
 )
 
 const readBufferSize int = 1 << 13 // 8kb

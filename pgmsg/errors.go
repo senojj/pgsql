@@ -10,4 +10,5 @@ var (
 	ErrUnknownCode        = errors.New("unknown code")
 	ErrInvalidFormat      = errors.New("invalid format")
 	ErrUnexpectedType     = errors.New("unexpected type")
+	ErrParameterMismatch  = errors.New("parameter mismatch")
 )

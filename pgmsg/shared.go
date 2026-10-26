@@ -3,7 +3,7 @@ package pgmsg
 import (
 	"fmt"
 
-	"github.com/senojj/pgsql/pgproto/pgio"
+	"github.com/senojj/pgsql/pgio"
 )
 
 func invalidFormat(cause error) error {

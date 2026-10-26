@@ -3,7 +3,7 @@ package pgmsg
 import (
 	"math"
 
-	"github.com/senojj/pgsql/pgproto/pgio"
+	"github.com/senojj/pgsql/pgio"
 )
 
 type AuthenticationOk struct{}

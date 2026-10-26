@@ -3,7 +3,7 @@ package pgmsg
 import (
 	"testing"
 
-	"github.com/senojj/pgsql/pgproto/pgio"
+	"github.com/senojj/pgsql/pgio"
 
 	"github.com/stretchr/testify/require"
 )

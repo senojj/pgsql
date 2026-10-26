@@ -1,4 +1,4 @@
-package pgproto
+package pgsql
 
 const (
 	major3             int32 = 3

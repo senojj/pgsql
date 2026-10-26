@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	"github.com/senojj/pgsql/pgproto/pgio"
+	"github.com/senojj/pgsql/pgio"
 )
 
 const readBufferSize int = 1 << 13 // 8kb
